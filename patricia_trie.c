@@ -39,14 +39,14 @@ int patricia_trie_add(PATRICIA_TRIE *patricia_trie, char *key, void *element) {
 	// Next node
 	if(*ch_p == '\0' && ch_k != '\0') {
 // 		puts("Next node");
-		PATRICIA_TRIE *next_node  = patricia_trie->childs[ *ch_k ];
+		PATRICIA_TRIE *next_node  = patricia_trie->childs[ (int)*ch_k ];
 			
 		if(next_node == NULL) {
 			next_node = patricia_trie_create();
 			next_node->key = (char *)malloc(200*sizeof(char));
 			strcpy(next_node->key, ch_k);
 			
-			patricia_trie->childs[ *ch_k ] = next_node;
+			patricia_trie->childs[ (int)*ch_k ] = next_node;
 			patricia_trie->nchilds++;
 		}
 		
@@ -79,7 +79,7 @@ int patricia_trie_add(PATRICIA_TRIE *patricia_trie, char *key, void *element) {
 		patricia_trie->data = NULL;
 		
 		// Adds the node to keep the old subtrie
-		patricia_trie->childs[ keep_node->key[0] ] = keep_node;
+		patricia_trie->childs[ (int)keep_node->key[0] ] = keep_node;
 		
 		// If the broken node creates the desired key
 		if(*ch_k == '\0') {
@@ -92,11 +92,12 @@ int patricia_trie_add(PATRICIA_TRIE *patricia_trie, char *key, void *element) {
 		new_node->key = (char *)malloc(200*sizeof(char));
 		strcpy(new_node->key, ch_k);	// Copies the new key
 		
-		patricia_trie->childs[ new_node->key[0] ] = new_node;
+		patricia_trie->childs[ (int)new_node->key[0] ] = new_node;
 		
 		return patricia_trie_add(new_node, ch_k, element);
 	}
 	
+	fputs("Error on patricia_trie_add", stderr);
 	return 0;	// ERROR
 }
 
@@ -115,7 +116,7 @@ void patricia_trie_print(PATRICIA_TRIE *patricia_trie, int level) {
 	//	printf("    ");
 	//printf("%s (%s)\n", patricia_trie->key, patricia_trie->data);
 	if(patricia_trie->data != NULL)
-		printf("%s\n", patricia_trie->data);
+		printf("%s\n", (char *)patricia_trie->data);
 	
 	for(i=0; i<patricia_trie->nallocchilds; i++)
 		patricia_trie_print(patricia_trie->childs[i], level+1);
@@ -127,7 +128,7 @@ void patricia_trie_print_node(PATRICIA_TRIE* patricia_trie) {
 	puts  ("NODE: ");
 	printf("      Key: %s\n", patricia_trie->key);
 	printf("  NChilds: %d\n", patricia_trie->nchilds);
-	printf("     Data: %s\n", patricia_trie->data);
+	printf("     Data: %s\n", (char *)patricia_trie->data);
 	puts  ("   Childs:");
 	for(i=0; i<patricia_trie->nallocchilds; i++)
 		if(patricia_trie->childs[i] != NULL)
