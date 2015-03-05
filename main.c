@@ -12,33 +12,16 @@
 
 #include "logparser.h"
 #include "patricia_trie.h"
+#include "ipinfo.h"
 
 
 int main(int argc, char **argv) {
-	PATRICIA_TRIE *p = patricia_trie_create();
-	/*puts("-- 1");
-	printf("%d\n", patricia_trie_add(p, "MARIA", "MARIA"));
-	puts("-- 2");
-	printf("%d\n", patricia_trie_add(p, "MADALENA", "MADALENA"));
-	puts("-- 3");
-	printf("%d\n", patricia_trie_add(p, "MARIZA", "MARIZA"));
-	puts("-- 4");
-	printf("%d\n", patricia_trie_add(p, "MARIANA", "MARIANA"));
-	printf("%d\n", patricia_trie_add(p, "MANUEL", "MANUEL"));
-	printf("%d\n", patricia_trie_add(p, "MANUELA", "MANUELA"));
-	printf("%d\n", patricia_trie_add(p, "MIGUEL", "MIGUEL"));
-	printf("%d\n", patricia_trie_add(p, "MARCOS", "MARCOS"));
-	printf("%d\n", patricia_trie_add(p, "MARCO", "MARCO"));
-	printf("%d\n", patricia_trie_add(p, "MARCO", "MARCO"));
-	printf("%d\n", patricia_trie_add(p, "MONICA", "MONICA"));
-	printf("%d\n", patricia_trie_add(p, "DANIELA", "DANIELA"));
-	puts("-- PRINT");
-	patricia_trie_print(p, 0);
+	IPINFO *info = ipinfo("66.249.78.34");
+	printf("ip:%s\nhostname:%s\nloc:%s\norg:%s\ncity:%s\nregion:%s\ncontry:%s\npostal:%s\nphone:%s\n",
+		   	info->ip, info->hostname, info->loc, info->org, info->city, info->region, info->country, info->postal, info->phone);
+	return 0;
+	//////////////////////////////
 	
-	patricia_trie_print_node(p->childs['M']);
-	
-	return EXIT_SUCCESS; */
-	////////////////////////////////////
 	
 	// Arguments
 	if(argc != 2) {
@@ -56,22 +39,13 @@ int main(int argc, char **argv) {
 	
 	// Reads the log file
 	char buf[LINE_WIDTH];
-	int i=0;
-	while( fgets(buf, LINE_WIDTH, log) != NULL ) {
-		//fflush(stdout);
-		//printf("PRINT[%d] %s\n", ++i, buf);
-		//fflush(stdout);
-		//printf("%s",buf);
-		
-		REQUEST *req = parse_line(buf);
-		//fflush(stdout);
-		//printf("END REQUEST\n");
-		//fflush(stdout);
-		patricia_trie_add(p, req->ip, req->ip);
+	PATRICIA_TRIE *p = patricia_trie_create();
 	
-		
+	while( fgets(buf, LINE_WIDTH, log) != NULL ) {
+		REQUEST *req = parse_line(buf);
+		patricia_trie_add(p, req->ip, req->ip);
 	}
-	puts("CLOSE");
+	
 	// Close log
 	fclose(log);
 	
