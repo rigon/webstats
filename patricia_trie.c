@@ -17,28 +17,30 @@ PATRICIA_TRIE *patricia_trie_create() {
 	return trie;
 }
 
-int patricia_trie_add(PATRICIA_TRIE *patricia_trie, char *key, void *element) {
+int patricia_trie_add(PATRICIA_TRIE *patricia_trie, const char *key, void *element) {
 	int i, j;
 	
-// 	printf("key:%s patritia_key:%s\n",key, patricia_trie->key);
+	if(key == NULL) return 1;	// ERROR
+	
+//	printf("key:%s patritia_key:%s\n",key, patricia_trie->key);
 	// Compares the string
 	for(i=0; patricia_trie->key[i]==key[i] && key[i]!='\0' && patricia_trie->key[i]!='\0'; i++);
-	char *ch_k = &(key[i]);
+	const char *ch_k = &(key[i]);
 	char *ch_p = &(patricia_trie->key[i]);
-// 	printf("%i - ch_k:[%d]%s ch_p:[%d]%s\n",i, *ch_k, ch_k, *ch_p, ch_p);
+//	printf("%i - ch_k:[%d]%s ch_p:[%d]%s\n",i, *ch_k, ch_k, *ch_p, ch_p);
 	
 	///////////////////////////
 	// Key is equal to the trie
 	if(*ch_k=='\0' && *ch_p=='\0') {
-// 		puts("Key is equal to the trie");
+//		puts("Key is equal to the trie");
 		patricia_trie->data = element;
-		return 1;
+		return 0;	// OK
 	}
 	
 	////////////
 	// Next node
 	if(*ch_p == '\0' && ch_k != '\0') {
-// 		puts("Next node");
+//		puts("Next node");
 		PATRICIA_TRIE *next_node  = patricia_trie->childs[ (int)*ch_k ];
 			
 		if(next_node == NULL) {
@@ -57,7 +59,7 @@ int patricia_trie_add(PATRICIA_TRIE *patricia_trie, char *key, void *element) {
 	////////////////
 	// Breaks a node
 	if(*ch_k != *ch_p && *ch_p != '\0') {
-// 		puts("Breaks a node");
+//		puts("Breaks a node");
 		// Creates a node to keep the old subtrie
 		PATRICIA_TRIE *keep_node = patricia_trie_create();
 		keep_node->key = (char *)malloc(200*sizeof(char));
@@ -84,7 +86,7 @@ int patricia_trie_add(PATRICIA_TRIE *patricia_trie, char *key, void *element) {
 		// If the broken node creates the desired key
 		if(*ch_k == '\0') {
 			patricia_trie->data = element;
-			return 1;
+			return 0;	// OK
 		} // Otherwise...
 		
 		// Creates the new node
@@ -98,11 +100,46 @@ int patricia_trie_add(PATRICIA_TRIE *patricia_trie, char *key, void *element) {
 	}
 	
 	fputs("Error on patricia_trie_add", stderr);
-	return 0;	// ERROR
+	return 1;	// ERROR
 }
 
-int patricia_trie_remove(PATRICIA_TRIE *patricia_trie, char *key);
-void *patricia_trie_search(PATRICIA_TRIE *patricia_trie, char *key);
+
+void *patricia_trie_search(PATRICIA_TRIE *patricia_trie, const char *key) {
+	int i;
+	
+	if(patricia_trie == NULL)
+		return NULL;	// Key not found
+	
+	for(i=0; patricia_trie->key[i]==key[i] && key[i]!='\0' && patricia_trie->key[i]!='\0'; i++);
+	const char *ch_k = &(key[i]);
+	char *ch_p = &(patricia_trie->key[i]);
+	
+	if(*ch_k=='\0' && *ch_p=='\0')		// Key found!
+		return patricia_trie->data;
+	
+	if(*ch_p == '\0' && ch_k != '\0')	// Next node
+		return patricia_trie_search(patricia_trie->childs[ (int)*ch_k ], ch_k);
+	
+	// Key not found
+	return NULL;
+}
+
+void patricia_trie_iterate(PATRICIA_TRIE *patricia_trie, void *info, int (*action)(void *info, void *data)) {
+	int i, ret=0;
+	
+	if(patricia_trie == NULL)
+		return;
+	
+	if(patricia_trie->data != NULL)
+		ret = action(info, patricia_trie->data);
+	if(ret > 0) return;	// Some error occurred
+	
+	for(i=0; i<patricia_trie->nallocchilds; i++)
+		patricia_trie_iterate(patricia_trie->childs[i], info, action);
+}
+
+
+int patricia_trie_remove(PATRICIA_TRIE *patricia_trie, const char *key);
 void patricia_trie_delete(PATRICIA_TRIE *patricia_trie);
 
 
@@ -112,11 +149,12 @@ void patricia_trie_print(PATRICIA_TRIE *patricia_trie, int level) {
 	if(patricia_trie == NULL)
 		return;
 	
-	//for(i=0; i<level; i++)
-	//	printf("    ");
-	//printf("%s (%s)\n", patricia_trie->key, patricia_trie->data);
-	if(patricia_trie->data != NULL)
-		printf("%s\n", (char *)patricia_trie->data);
+	for(i=0; i<level; i++)
+		printf("    ");
+	printf("%s (%p)\n", patricia_trie->key, patricia_trie->data);
+	
+	//if(patricia_trie->data != NULL)
+	//	printf("%s\n", (char *)patricia_trie->data);
 	
 	for(i=0; i<patricia_trie->nallocchilds; i++)
 		patricia_trie_print(patricia_trie->childs[i], level+1);

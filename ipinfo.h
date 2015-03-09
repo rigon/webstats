@@ -1,6 +1,8 @@
 #ifndef _IPINFO_INC
 #define _IPINFO_INC
 
+#include "patricia_trie.h"
+
 // IP info provider
 #define IPINFO_URL		"http://ipinfo.io/%s/json"		// %s is replaced by IP
 
@@ -35,5 +37,10 @@ typedef struct {
 } IPINFO;
 
 IPINFO *ipinfo(const char *ip);
+void ipinfo_print(IPINFO *info);
+
+PATRICIA_TRIE *ipinfo_read(const char *filename);
+int ipinfo_write(const char *filename, PATRICIA_TRIE *patricia_trie);
+int ipinfo_save();
 
 #endif /* _IPINFO_INC */

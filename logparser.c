@@ -19,6 +19,9 @@ char *next_parameter(char *buf, char ending, char *last) {
 
 
 REQUEST *parse_line(char *line) {
+	if(line == NULL) return NULL; 
+	if(line[0] == '\0') return NULL;	// Empty line
+	
 	REQUEST *req = (REQUEST *)malloc(sizeof(REQUEST));
 	
 	int size = strlen(line);
@@ -73,13 +76,16 @@ REQUEST *parse_line(char *line) {
 	pos = next_parameter(pos, '"', last);
 	pos++;
 	
-	//printf("%s\nIP: %s\nIdentd: %s\nUser: %s\nTime: %s\nRequest: %s\nStatus Code: %s\nSize: %s\nReferer: %s\nUser Agent: %s\n\n",
-	//	line, req->ip, req->identd, req->user, req->time, req->request, req->status_code, req->size, req->referer, req->user_agent);
-
 	return req;
 }
 
 void parse_delete(REQUEST *request) {
 	free(request->line);
 	free(request);
+}
+
+void request_print(REQUEST *req) {
+	if(req != NULL)
+		printf("%s\nIP: %s\nIdentd: %s\nUser: %s\nTime: %s\nRequest: %s\nStatus Code: %s\nSize: %s\nReferer: %s\nUser Agent: %s\n\n",
+		req->line, req->ip, req->identd, req->user, req->time, req->request, req->status_code, req->size, req->referer, req->user_agent);
 }

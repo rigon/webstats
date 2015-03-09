@@ -1,11 +1,3 @@
-/*
- * LogFormat "%v:%p %h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" vhost_combined
- * LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined
- * LogFormat "%h %l %u %t \"%r\" %>s %O" common
- * LogFormat "%{Referer}i -> %U" referer
- * LogFormat "%{User-agent}i" agent
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,15 +6,32 @@
 #include "patricia_trie.h"
 #include "ipinfo.h"
 
+#define LINE_WIDTH	10000
+
+int ips = 0;
+
+int processip(void *info, void *data) {
+	REQUEST *req = (REQUEST *)data;
+	
+	//if(ips > 30) return 1;
+	
+	printf("\n\n%d: %s\n", ips, req->ip);
+	IPINFO *ip = ipinfo(req->ip);
+	ipinfo_print(ip);
+
+	ips++;
+	return 0;
+}
+
+
+int print(void *info, void *data) {
+	REQUEST *d = (REQUEST *)data;
+	
+	printf("%s\n",d->ip);
+	return 0;
+}
 
 int main(int argc, char **argv) {
-	IPINFO *info = ipinfo("66.249.78.34");
-	printf("ip:%s\nhostname:%s\nloc:%s\norg:%s\ncity:%s\nregion:%s\ncontry:%s\npostal:%s\nphone:%s\n",
-		   	info->ip, info->hostname, info->loc, info->org, info->city, info->region, info->country, info->postal, info->phone);
-	return 0;
-	//////////////////////////////
-	
-	
 	// Arguments
 	if(argc != 2) {
 		fprintf(stderr, "Wrong number of arguments!\n");
@@ -37,19 +46,29 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 	
+	
+	printf("Reading log...\t");
 	// Reads the log file
 	char buf[LINE_WIDTH];
 	PATRICIA_TRIE *p = patricia_trie_create();
-	
 	while( fgets(buf, LINE_WIDTH, log) != NULL ) {
 		REQUEST *req = parse_line(buf);
-		patricia_trie_add(p, req->ip, req->ip);
+		if(req != NULL) patricia_trie_add(p, req->ip, req);
 	}
-	
 	// Close log
 	fclose(log);
+	puts("[ OK ]");
 	
-	patricia_trie_print(p,0);
+	//patricia_trie_iterate(p, NULL, print);
+	//patricia_trie_print(p,0);
+	
+	printf("Processing IPs...\t");
+	patricia_trie_iterate(p, NULL, processip);
+	puts("[ OK ]");
+	
+	printf("Saving Info...\t");
+	ipinfo_save();
+	puts("[ OK ]");
 	
 	return EXIT_SUCCESS;
 }
