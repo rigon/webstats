@@ -39,6 +39,7 @@ static size_t ipinfo_WriteMemoryCallback(void *contents, size_t size, size_t nme
 
 
 int fetch_json(const char *url, MemoryStruct *chunk) {
+	//printf("--- %s\n",url);
 	int ret = 0;
 	
 	CURL *curl_handle;
@@ -242,6 +243,9 @@ PATRICIA_TRIE *ipinfo_read(const char *filename) {
 		}
 		param++;
 	}
+	
+	// For the last entry to be added
+	if(param > 9 && ipinfo != NULL) patricia_trie_add(p, ipinfo->ip, ipinfo);	// Adds the entry to the patricia_trie
 	
 	// Close log
 	fclose(file);

@@ -13,25 +13,23 @@ int ips = 0;
 int processip(void *info, void *data) {
 	REQUEST *req = (REQUEST *)data;
 	
-	//if(ips > 30) return 1;
-	
-	printf("\n\n%d: %s\n", ips, req->ip);
+	//printf("%d: %s\n", ++ips, req->ip);
 	IPINFO *ip = ipinfo(req->ip);
-	ipinfo_print(ip);
-
-	ips++;
-	return 0;
-}
-
-
-int print(void *info, void *data) {
-	REQUEST *d = (REQUEST *)data;
+	req->ipinfo = ip;
 	
-	printf("%s\n",d->ip);
 	return 0;
 }
+
+
+// int print(void *info, void *data) {
+// 	REQUEST *d = (REQUEST *)data;
+// 	
+// 	printf("%s\n",d->ip);
+// 	return 0;
+// }
 
 int main(int argc, char **argv) {
+	
 	// Arguments
 	if(argc != 2) {
 		fprintf(stderr, "Wrong number of arguments!\n");
