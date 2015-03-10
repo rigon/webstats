@@ -9,6 +9,8 @@
 #ifndef _LOGPARSER_INC
 #define _LOGPARSER_INC
 
+#include "ipinfo.h"
+
 typedef struct {
 	char *line;
 	
@@ -22,6 +24,8 @@ typedef struct {
 	char *size;
 	char *referer;
 	char *user_agent;
+	
+	IPINFO *ipinfo;
 } REQUEST;
 
 
