@@ -1,6 +1,8 @@
+#define _XOPEN_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "logparser.h"
 #include "patricia_trie.h"
@@ -15,18 +17,19 @@ int processip(void *info, void *data) {
 	
 	//printf("%d: %s\n", ++ips, req->ip);
 	IPINFO *ip = ipinfo(req->ip);
+	
 	req->ipinfo = ip;
 	
 	return 0;
 }
 
 
-// int print(void *info, void *data) {
-// 	REQUEST *d = (REQUEST *)data;
-// 	
-// 	printf("%s\n",d->ip);
-// 	return 0;
-// }
+int print(void *info, void *data) {
+	REQUEST *d = (REQUEST *)data;
+	
+	printf("%s\n",d->time);
+	return 0;
+}
 
 int main(int argc, char **argv) {
 	
@@ -45,28 +48,28 @@ int main(int argc, char **argv) {
 	}
 	
 	
-	printf("Reading log...\t");
+	printf("Reading log...\t\t"); fflush(stdout);
 	// Reads the log file
 	char buf[LINE_WIDTH];
 	PATRICIA_TRIE *p = patricia_trie_create();
 	while( fgets(buf, LINE_WIDTH, log) != NULL ) {
 		REQUEST *req = parse_line(buf);
-		if(req != NULL) patricia_trie_add(p, req->ip, req);
+		if(req != NULL) patricia_trie_add(p, req->ip, req, NULL);
 	}
 	// Close log
 	fclose(log);
-	puts("[ OK ]");
+	puts("[ OK ]"); fflush(stdout);
 	
-	//patricia_trie_iterate(p, NULL, print);
+	patricia_trie_iterate(p, NULL, print);
 	//patricia_trie_print(p,0);
 	
-	printf("Processing IPs...\t");
+	printf("Processing IPs...\t"); fflush(stdout);
 	patricia_trie_iterate(p, NULL, processip);
-	puts("[ OK ]");
+	puts("[ OK ]"); fflush(stdout);
 	
-	printf("Saving Info...\t");
+	printf("Saving Info...\t\t"); fflush(stdout);
 	ipinfo_save();
-	puts("[ OK ]");
+	puts("[ OK ]"); fflush(stdout);
 	
 	return EXIT_SUCCESS;
 }

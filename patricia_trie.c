@@ -17,7 +17,7 @@ PATRICIA_TRIE *patricia_trie_create() {
 	return trie;
 }
 
-int patricia_trie_add(PATRICIA_TRIE *patricia_trie, const char *key, void *element) {
+int patricia_trie_add(PATRICIA_TRIE *patricia_trie, const char *key, void *element, int (*add)(void *data, void *element)) {
 	int i, j;
 	
 	if(key == NULL) return 1;	// ERROR
@@ -33,8 +33,8 @@ int patricia_trie_add(PATRICIA_TRIE *patricia_trie, const char *key, void *eleme
 	// Key is equal to the trie
 	if(*ch_k=='\0' && *ch_p=='\0') {
 //		puts("Key is equal to the trie");
-		patricia_trie->data = element;
-		return 0;	// OK
+		if(add == NULL) { patricia_trie->data = element; return 0; }	// Adds the element and returns OK
+		else return add(&(patricia_trie->data), element);	// Callback to the function to add the element
 	}
 	
 	////////////
@@ -52,7 +52,7 @@ int patricia_trie_add(PATRICIA_TRIE *patricia_trie, const char *key, void *eleme
 			patricia_trie->nchilds++;
 		}
 		
-		return patricia_trie_add(next_node, ch_k, element);
+		return patricia_trie_add(next_node, ch_k, element, add);
 	}
 	
 	
@@ -85,8 +85,8 @@ int patricia_trie_add(PATRICIA_TRIE *patricia_trie, const char *key, void *eleme
 		
 		// If the broken node creates the desired key
 		if(*ch_k == '\0') {
-			patricia_trie->data = element;
-			return 0;	// OK
+			if(add == NULL) { patricia_trie->data = element; return 0; }	// Adds the element and returns OK
+			else return add(&(patricia_trie->data), element);	// Callback to the function to add the element
 		} // Otherwise...
 		
 		// Creates the new node
@@ -96,7 +96,7 @@ int patricia_trie_add(PATRICIA_TRIE *patricia_trie, const char *key, void *eleme
 		
 		patricia_trie->childs[ (int)new_node->key[0] ] = new_node;
 		
-		return patricia_trie_add(new_node, ch_k, element);
+		return patricia_trie_add(new_node, ch_k, element, add);
 	}
 	
 	fputs("Error on patricia_trie_add", stderr);

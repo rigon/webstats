@@ -16,7 +16,7 @@ struct PATRICIA_TRIE_STRUCT {
 
 
 PATRICIA_TRIE *patricia_trie_create();
-int patricia_trie_add(PATRICIA_TRIE *patricia_trie, const char *key, void *element);
+int patricia_trie_add(PATRICIA_TRIE *patricia_trie, const char *key, void *element, int (*add)(void *data, void *element));
 void *patricia_trie_search(PATRICIA_TRIE *patricia_trie, const char *key);
 void patricia_trie_iterate(PATRICIA_TRIE *patricia_trie, void *info, int (*action)(void *info, void *data));
 int patricia_trie_remove(PATRICIA_TRIE *patricia_trie, const char *key);
