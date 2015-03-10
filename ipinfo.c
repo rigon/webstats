@@ -142,6 +142,8 @@ int json_parse(const char *json, IPINFO *ipinfo) {
 IPINFO *ipinfo(const char *ip) {
 	if(list_ipinfo == NULL)
 		list_ipinfo = ipinfo_read("ipinfo.lst");	// Reads info from the file
+	if(list_ipinfo == NULL)		// Failed to open the databse
+		list_ipinfo = patricia_trie_create();
 	
 	// Searches if the IP is already in the databse
 	IPINFO *info = (IPINFO *)patricia_trie_search(list_ipinfo, ip);
@@ -163,7 +165,7 @@ IPINFO *ipinfo(const char *ip) {
 	json_parse(chunk.memory, info);
 	
 	// Adds to the trie
-	patricia_trie_add(list_ipinfo, info->ip, info);
+	patricia_trie_add(list_ipinfo, info->ip, info, NULL);
 	
 	return info;
 }
@@ -202,7 +204,7 @@ PATRICIA_TRIE *ipinfo_read(const char *filename) {
 		
 		if(param > 9) {	// Allocates a new entry
 			if(ipinfo != NULL)
-				patricia_trie_add(p, ipinfo->ip, ipinfo);	// Adds the entry to the patricia_trie
+				patricia_trie_add(p, ipinfo->ip, ipinfo, NULL);	// Adds the entry to the patricia_trie
 			
 			ipinfo = (IPINFO *)calloc(1, sizeof(IPINFO));
 			param = 0;
@@ -245,7 +247,7 @@ PATRICIA_TRIE *ipinfo_read(const char *filename) {
 	}
 	
 	// For the last entry to be added
-	if(param > 9 && ipinfo != NULL) patricia_trie_add(p, ipinfo->ip, ipinfo);	// Adds the entry to the patricia_trie
+	if(param > 9 && ipinfo != NULL) patricia_trie_add(p, ipinfo->ip, ipinfo, NULL);	// Adds the entry to the patricia_trie
 	
 	// Close log
 	fclose(file);
